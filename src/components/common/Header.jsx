@@ -18,6 +18,9 @@ const Header = () => {
     const token = useSelector((s) => s?.auth?.token);
     const userEmail = useSelector((s) => s?.auth?.userEmail);
 
+    const role = useSelector((s) => s?.auth?.role);
+    const isSuperAdmin = role === "SUPER_ADMIN";
+
     const isLoggedIn = Boolean(token);
 
     const handleToggleMenu = () => {
@@ -47,6 +50,12 @@ const Header = () => {
         }
     };
 
+    // Get first letter of email
+    const getInitial = () => {
+        if (!userEmail) return "U";
+        return userEmail.charAt(0).toUpperCase();
+    };
+
     const loginAction = HEADER_ACTIONS.login;
     const signupAction = HEADER_ACTIONS.signup;
 
@@ -74,12 +83,22 @@ const Header = () => {
                                 key={item.id}
                                 type="button"
                                 onClick={() => handleNavigate(item.href)}
-                                className={`text-gray-700 hover:text-emerald-600 font-medium transition ${pathname === item.href ? "text-emerald-600" : ""
+                                className={`text-gray-700 hover:text-emerald-600 cursor-pointer font-medium transition ${pathname === item.href ? "text-emerald-600" : ""
                                     }`}
                             >
                                 {item.label}
                             </button>
                         ))}
+                        {isLoggedIn && isSuperAdmin && (
+                            <button
+                                type="button"
+                                onClick={() => handleNavigate("/admin/groups")}
+                                className={`text-gray-700 hover:text-emerald-600 cursor-pointer font-medium transition ${pathname.startsWith("/admin") ? "text-emerald-600" : ""
+                                    }`}
+                            >
+                                Admin
+                            </button>
+                        )}
                     </nav>
 
                     {/* Actions - Consistent across all devices */}
@@ -88,16 +107,16 @@ const Header = () => {
                             <>
                                 <button
                                     type="button"
-                                    className="hidden lg:block px-4 py-2 text-gray-700 hover:text-emerald-600 font-medium transition"
+                                    className="hidden cursor-pointer lg:flex items-center justify-center w-10 h-10 rounded-full bg-linear-to-r from-emerald-600 to-blue-600 text-white font-semibold hover:shadow-lg transition transform hover:scale-105"
                                     onClick={() => handleNavigate("/profile")}
                                     title={userEmail || "Account"}
                                 >
-                                    {userEmail ? userEmail : "Account"}
+                                    {getInitial()}
                                 </button>
 
                                 <button
                                     type="button"
-                                    className="hidden lg:block px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                                    className="hidden cursor-pointer lg:block px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
                                     onClick={handleLogout}
                                 >
                                     Logout
@@ -108,7 +127,7 @@ const Header = () => {
                                 {loginAction && (
                                     <button
                                         type="button"
-                                        className="hidden lg:block px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium transition"
+                                        className="hidden cursor-pointer lg:block px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium transition"
                                         onClick={() => handleNavigate(loginAction.href)}
                                     >
                                         {loginAction.label}
@@ -118,7 +137,7 @@ const Header = () => {
                                 {signupAction && (
                                     <button
                                         type="button"
-                                        className="hidden lg:block px-5 py-2 bg-linear-to-r from-emerald-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition transform hover:-translate-y-0.5 font-medium"
+                                        className="hidden cursor-pointer lg:block px-5 py-2 bg-linear-to-r from-emerald-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition transform hover:-translate-y-0.5 font-medium"
                                         onClick={() => handleNavigate(signupAction.href)}
                                     >
                                         {signupAction.label}

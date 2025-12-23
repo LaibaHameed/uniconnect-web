@@ -8,7 +8,7 @@ const HEADER_NAV_ITEMS_MAP = {
     societies: {
         id: 'societies',
         label: 'Societies',
-        href: '#societies',
+        href: '/groups',
     },
     events: {
         id: 'events',
@@ -18,7 +18,7 @@ const HEADER_NAV_ITEMS_MAP = {
     about: {
         id: 'about',
         label: 'About',
-        href: '#about',
+        href: '/about',
     },
 };
 

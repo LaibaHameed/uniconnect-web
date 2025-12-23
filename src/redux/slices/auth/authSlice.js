@@ -6,8 +6,10 @@ const initialState = {
   token: null,
   profileCompleted: false,
   userEmail: null,
-  role: null, // ✅ for future RBAC
+  role: null,
+  hydrated: false, // ✅ add this
 };
+
 
 const authSlice = createSlice({
   name: 'auth',
@@ -51,6 +53,7 @@ const authSlice = createSlice({
         state.profileCompleted = false;
         state.userEmail = null;
         state.role = null;
+        state.hydrated = true;
 
         if (typeof window !== 'undefined') {
           localStorage.removeItem('uniconnect_auth');
@@ -62,10 +65,13 @@ const authSlice = createSlice({
 
     hydrateFromStorage: (state) => {
       try {
-        if (typeof window === 'undefined') return;
+        if (typeof window === "undefined") return;
 
-        const raw = localStorage.getItem('uniconnect_auth');
-        if (!raw) return;
+        const raw = localStorage.getItem("uniconnect_auth");
+        if (!raw) {
+          state.hydrated = true; // ✅ even if empty
+          return;
+        }
 
         const parsed = JSON.parse(raw);
 
@@ -73,12 +79,37 @@ const authSlice = createSlice({
         state.profileCompleted = !!parsed.profileCompleted;
         state.userEmail = parsed.email || null;
         state.role = parsed.role || null;
+        state.hydrated = true; // ✅ mark ready
       } catch (error) {
-        console.error('Error hydrating auth state:', error);
+        console.error("Error hydrating auth state:", error);
+        state.hydrated = true; // ✅ fail-safe
       }
     },
+
+    setProfileCompleted: (state, action) => {
+      try {
+        const value = Boolean(action.payload);
+        state.profileCompleted = value;
+
+        if (typeof window !== "undefined") {
+          const raw = localStorage.getItem("uniconnect_auth");
+          const parsed = raw ? JSON.parse(raw) : {};
+          localStorage.setItem(
+            "uniconnect_auth",
+            JSON.stringify({
+              ...parsed,
+              profileCompleted: value,
+            })
+          );
+        }
+      } catch (err) {
+        console.error("Error in setProfileCompleted reducer:", err);
+      }
+    },
+
+
   },
 });
 
-export const { setCredentials, logout, hydrateFromStorage } = authSlice.actions;
+export const { setCredentials, logout, hydrateFromStorage, setProfileCompleted } = authSlice.actions;
 export default authSlice.reducer;

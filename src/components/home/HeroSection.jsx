@@ -1,5 +1,6 @@
 "use client";
 import { Sparkles, ArrowRight, Search } from "lucide-react";
+import Link from "next/link";
 
 const HeroSection = () => {
     return (
@@ -25,7 +26,7 @@ const HeroSection = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 pt-4">
                             <button className="px-8 py-4 cursor-pointer bg-linear-to-r from-emerald-600 to-blue-600 text-white rounded-xl hover:shadow-xl transition flex items-center space-x-2">
-                                <span>Explore Societies</span>
+                                <Link href={'/groups'}>Explore Societies</Link>
                                 <ArrowRight className="w-5 h-5" />
                             </button>
 

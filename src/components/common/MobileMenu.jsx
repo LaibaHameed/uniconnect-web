@@ -27,6 +27,12 @@ const MobileMenu = ({ onNavigate, onLogout }) => {
     }
   };
 
+  // Get first letter of email
+  const getInitial = () => {
+    if (!userEmail) return "U";
+    return userEmail.charAt(0).toUpperCase();
+  };
+
   const loginAction = HEADER_ACTIONS.login;
   const signupAction = HEADER_ACTIONS.signup;
 
@@ -52,10 +58,13 @@ const MobileMenu = ({ onNavigate, onLogout }) => {
               <button
                 type="button"
                 onClick={() => handleClick("/profile")}
-                className="w-full text-left text-gray-700 hover:text-emerald-600 font-medium transition py-2"
+                className="w-full flex items-center space-x-3 text-gray-700 hover:text-emerald-600 font-medium transition py-2"
                 title={userEmail || "Account"}
               >
-                {userEmail || "Account"}
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-linear-to-r from-emerald-600 to-blue-600 text-white font-semibold">
+                  {getInitial()}
+                </div>
+                <span>{userEmail || "Account"}</span>
               </button>
 
               <button

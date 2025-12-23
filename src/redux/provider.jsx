@@ -1,28 +1,15 @@
-'use client';
+"use client";
 
-import { Provider, useDispatch } from 'react-redux';
-import { useRef, useEffect } from 'react';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { hydrateFromStorage } from './slices/auth/authSlice';
-import { makeStore } from './store';
+import { Provider } from "react-redux";
+import { useEffect, useRef } from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const HydrateAuth = () => {
-    const dispatch = useDispatch();
-
-    useEffect(() => {
-        try {
-            dispatch(hydrateFromStorage());
-        } catch (e) {
-            console.error("hydrateFromStorage failed:", e);
-        }
-    }, [dispatch]);
-
-    return null;
-};
+import { hydrateFromStorage } from "./slices/auth/authSlice";
+import { makeStore } from "./store";
 
 const Providers = ({ children }) => {
-    const storeRef = useRef();
+    const storeRef = useRef(null);
 
     if (!storeRef.current) {
         storeRef.current = makeStore();
@@ -31,8 +18,8 @@ const Providers = ({ children }) => {
     useEffect(() => {
         try {
             storeRef.current.dispatch(hydrateFromStorage());
-        } catch (error) {
-            console.error('Error hydrating auth from storage:', error);
+        } catch (e) {
+            console.error("Error hydrating auth from storage:", e);
         }
     }, []);
 
