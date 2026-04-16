@@ -6,6 +6,7 @@ const initialState = {
   token: null,
   profileCompleted: false,
   userEmail: null,
+  userId: null,
   role: null,
   hydrated: false, // ✅ add this
 };
@@ -29,8 +30,16 @@ const authSlice = createSlice({
           payload.user?.email ||
           null;
 
+        const userId =
+          payload.user?._id ||
+          payload.user?.id ||
+          payload.userId ||
+          null;
+
+
         const role = payload.role || payload.user?.role || null;
 
+        state.userId = userId;
         state.token = token;
         state.profileCompleted = profileCompleted;
         state.userEmail = email;
@@ -39,7 +48,7 @@ const authSlice = createSlice({
         if (typeof window !== 'undefined') {
           localStorage.setItem(
             'uniconnect_auth',
-            JSON.stringify({ token, profileCompleted, email, role }),
+            JSON.stringify({ token, profileCompleted, email, role, userId }),
           );
         }
       } catch (error) {
@@ -79,6 +88,7 @@ const authSlice = createSlice({
         state.profileCompleted = !!parsed.profileCompleted;
         state.userEmail = parsed.email || null;
         state.role = parsed.role || null;
+        state.userId = parsed.userId || null;
         state.hydrated = true; // ✅ mark ready
       } catch (error) {
         console.error("Error hydrating auth state:", error);

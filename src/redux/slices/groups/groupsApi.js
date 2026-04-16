@@ -27,6 +27,14 @@ export const groupsApi = apiSlice.injectEndpoints({
             providesTags: (result, error, groupId) => [{ type: "Groups", id: groupId }],
         }),
 
+        getMyJoinRequest: builder.query({
+            query: ({ groupId }) => ({
+                url: `/groups/${groupId}/join-request/me`,
+                method: "GET",
+            }),
+            providesTags: (res, err, arg) => [{ type: "MyJoinRequest", id: arg.groupId }],
+        }),
+
         // AUTH
         createGroup: builder.mutation({
             query: (body) => ({
@@ -67,7 +75,10 @@ export const groupsApi = apiSlice.injectEndpoints({
                 method: "POST",
                 body: { note },
             }),
-            invalidatesTags: (res, err, arg) => [{ type: "JoinRequests", id: arg.groupId }],
+            invalidatesTags: (res, err, arg) => [
+                { type: "JoinRequests", id: arg.groupId },
+                { type: "MyJoinRequest", id: arg.groupId } // This ensures the 'Pending' status refreshes
+            ],
         }),
 
         cancelMyJoinRequest: builder.mutation({
@@ -75,7 +86,7 @@ export const groupsApi = apiSlice.injectEndpoints({
                 url: `/groups/${groupId}/join-request/cancel`,
                 method: "PATCH",
             }),
-            invalidatesTags: (res, err, arg) => [{ type: "JoinRequests", id: arg.groupId }],
+            invalidatesTags: (res, err, arg) => [{ type: "JoinRequests", id: arg.groupId }, { type: "MyJoinRequest", id: arg.groupId }],
         }),
 
         listJoinRequests: builder.query({
@@ -140,4 +151,5 @@ export const {
     useMyGroupsQuery,
     useUpdateMemberRoleMutation,
     useRemoveMemberMutation,
+    useGetMyJoinRequestQuery
 } = groupsApi;

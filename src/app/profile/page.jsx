@@ -12,6 +12,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { logout } from "@/redux/slices/auth/authSlice";
 import {
   useGetMyProfileQuery,
+  useSetupProfileMutation,
   useUpdateMyProfileMutation,
 } from "@/redux/slices/profiles/profilesApi";
 import { profileSchema } from "@/validations/profileSchema";
@@ -36,11 +37,11 @@ const ProfilePage = () => {
     if (!token) router.replace("/auth/login");
   }, [token, router]);
 
-  const { data, isLoading, isError, refetch } = useGetMyProfileQuery(undefined, {
-    skip: !token,
-  });
+  const { data: profileData, isLoading, isError, refetch } = useGetMyProfileQuery();
+  const [updateMyProfile, { isLoading: isUpdating }] = useUpdateMyProfileMutation();
+  const [setupProfile, { isLoading: isSettingUp }] = useSetupProfileMutation(); // 2. Initialize mutation
 
-  const [updateMyProfile, { isLoading: isSaving }] = useUpdateMyProfileMutation();
+  const isSaving = isUpdating || isSettingUp;
 
   const defaults = useMemo(
     () => ({
@@ -85,7 +86,8 @@ const ProfilePage = () => {
   });
 
   useEffect(() => {
-    const profile = data?.profile;
+    // const profile = data?.profile;
+    const profile = profileData?.profile;
     if (!profile) return;
 
     reset({
@@ -113,7 +115,7 @@ const ProfilePage = () => {
       profileVisibility: profile?.profileVisibility ?? "PUBLIC",
       showEmailToSocietyAdmins: profile?.showEmailToSocietyAdmins ?? true,
     });
-  }, [data, reset, defaults]);
+  }, [profileData, reset, defaults]);
 
   const getInitial = () => {
     const n = watch("fullName") || userEmail || "U";
@@ -163,21 +165,30 @@ const ProfilePage = () => {
     return payload;
   };
 
-  const onSave = async (values) => {
+  // app/profile/page.jsx
+
+  const onSave = async (data) => {
     try {
-      const payload = buildPayload(values);
-      await updateMyProfile(payload).unwrap();
+      // We try to update first. If the backend is set to 'upsert', this is all you need.
+      await updateMyProfile(data).unwrap();
       setIsEditing(false);
-      await refetch();
-      alert("Profile updated");
+      refetch();
     } catch (err) {
-      const msg = err?.data?.message || err?.error || "Update failed";
-      alert(msg);
+      // If update fails because document is missing, fallback to setup
+      if (err.status === 404 || err.status === 400) {
+        try {
+          await setupProfile(data).unwrap();
+          setIsEditing(false);
+          refetch();
+        } catch (setupErr) {
+          console.error("Full save failed", setupErr);
+        }
+      }
     }
   };
 
   const onCancel = () => {
-    const profile = data?.profile || {};
+    const profile = profileData?.profile || {};
     reset({
       ...defaults,
       ...profile,
@@ -209,6 +220,25 @@ const ProfilePage = () => {
           Failed to load.
           <button onClick={() => refetch()} className="ml-2 text-blue-600 underline">
             Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isLoading && !profileData && !isEditing) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-xl shadow-md text-center max-w-md">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">No Profile Found</h2>
+          <p className="text-gray-600 mb-6">
+            It looks like you haven't set up your profile yet. Let's get started!
+          </p>
+          <button
+            onClick={() => setIsEditing(true)}
+            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Create My Profile
           </button>
         </div>
       </div>

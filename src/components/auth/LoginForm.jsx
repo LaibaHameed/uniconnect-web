@@ -41,7 +41,7 @@ const LoginForm = () => {
 
             dispatch(
                 setCredentials({
-                    token: res.accessToken, // or res.token if your backend sends that
+                    token: res.accessToken, 
                     profileCompleted: res.profileCompleted,
                     email: res.email,
                     role: res.role,
@@ -59,7 +59,7 @@ const LoginForm = () => {
             }
 
         } catch (error) {
-            console.error('Login error (raw):', error);
+            // console.error('Login error (raw):', error);
 
             const msg =
                 error?.data?.message ||

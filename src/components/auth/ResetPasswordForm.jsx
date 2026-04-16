@@ -60,7 +60,7 @@ const ResetPasswordForm = ({ initialEmail }) => {
 
             router.push('/auth/login');
         } catch (error) {
-            console.error('Reset password error (raw):', error);
+            // console.error('Reset password error (raw):', error);
 
             const msg =
                 error?.data?.message ||
