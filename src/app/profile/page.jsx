@@ -9,7 +9,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { logout } from "@/redux/slices/auth/authSlice";
 import {
   useGetMyProfileQuery,
   useSetupProfileMutation,
@@ -23,6 +22,7 @@ import { EducationSection } from "@/components/profile/EducationSection";
 import { UniversitySection } from "@/components/profile/UniversitySection";
 import { PrivacyLinksSection } from "@/components/profile/PrivacyLinksSection";
 import { AccountSection } from "@/components/profile/AccountSection";
+import { logout, setProfileCompleted } from "@/redux/slices/auth/authSlice";
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -167,22 +167,26 @@ const ProfilePage = () => {
 
   // app/profile/page.jsx
 
-  const onSave = async (data) => {
+  const onSave = async (formData) => {
+    const cleanedPayload = buildPayload(formData);
+
     try {
-      // We try to update first. If the backend is set to 'upsert', this is all you need.
-      await updateMyProfile(data).unwrap();
+      // Update the profile in the backend
+      await updateMyProfile(cleanedPayload).unwrap();
+
+      // ✅ THE FIX: Update the Redux Auth State & LocalStorage
+      dispatch(setProfileCompleted(true));
+
       setIsEditing(false);
       refetch();
+
+      // Optional: Show success message
+      alert("Profile updated successfully!");
     } catch (err) {
-      // If update fails because document is missing, fallback to setup
-      if (err.status === 404 || err.status === 400) {
-        try {
-          await setupProfile(data).unwrap();
-          setIsEditing(false);
-          refetch();
-        } catch (setupErr) {
-          console.error("Full save failed", setupErr);
-        }
+      if (err.status === 409) {
+        alert("Username or Student ID is already in use.");
+      } else {
+        alert("An error occurred while saving profile.");
       }
     }
   };

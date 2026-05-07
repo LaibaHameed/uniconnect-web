@@ -45,7 +45,7 @@ const GroupDetailsPage = () => {
 
     // app/societies/[id]/page.js
 
-    const handleJoinClick = () => {
+    const handleJoin = () => {
         if (!token) {
             router.push("/auth/login");
             return;

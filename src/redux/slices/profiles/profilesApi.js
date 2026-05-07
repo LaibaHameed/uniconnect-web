@@ -27,9 +27,11 @@ export const profilesApi = apiSlice.injectEndpoints({
                 method: "PATCH",
                 body,
             }),
-            invalidatesTags: ["Profile"],
+            invalidatesTags: ["Profile", "Auth"],
         }),
     }),
+    // ADD THIS LINE BELOW
+    overrideExisting: true,
 });
 
 export const {
