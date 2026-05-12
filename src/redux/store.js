@@ -3,6 +3,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { apiSlice } from './apiSlice';
 import authReducer from './slices/auth/authSlice';
+import eventsReducer from './slices/events/eventsSlice';
 
 export const makeStore = () => {
   try {
@@ -10,6 +11,7 @@ export const makeStore = () => {
       reducer: {
         [apiSlice.reducerPath]: apiSlice.reducer,
         auth: authReducer,
+        events: eventsReducer
       },
       middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(apiSlice.middleware),

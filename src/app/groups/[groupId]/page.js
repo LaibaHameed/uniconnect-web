@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { Users, Tag, ArrowLeft } from "lucide-react";
+import { Users, Tag, ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
 import {
     useGetGroupByIdQuery,
@@ -122,41 +122,50 @@ const GroupDetailsPage = () => {
                                 </button>
                             ) : (
                                 <>
-                                    {/* ADMIN */}
+                                    {/* ADMIN VIEW */}
                                     {isAdmin && (
-                                        <button
-                                            onClick={() => router.push(`/groups/${groupId}/admin/join-requests`)}
-                                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg cursor-pointer"
-                                        >
-                                            View Join Requests
-                                        </button>
+                                        <div className="flex flex-col gap-2">
+                                            <button
+                                                onClick={() => router.push(`/groups/${groupId}/events/create`)}
+                                                className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg cursor-pointer transition-all active:scale-95 shadow-sm font-medium"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                Create Event
+                                            </button>
+                                            <button
+                                                onClick={() => router.push(`/groups/${groupId}/admin/join-requests`)}
+                                                className="bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 px-6 py-3 rounded-lg cursor-pointer transition-colors font-medium"
+                                            >
+                                                View Join Requests
+                                            </button>
+                                        </div>
                                     )}
 
-                                    {/* PENDING REQUEST */}
+                                    {/* PENDING REQUEST (NON-ADMIN) */}
                                     {!isAdmin && !isMember && hasPendingRequest && (
                                         <button
                                             onClick={handleCancelRequest}
                                             disabled={cancelling}
-                                            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg cursor-pointer"
+                                            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg cursor-pointer transition-colors"
                                         >
                                             {cancelling ? "Cancelling..." : "Request Pending (Cancel)"}
                                         </button>
                                     )}
 
-                                    {/* JOIN BUTTON - Only shows if NOT loading, NOT member, NOT admin, and NO pending request */}
+                                    {/* JOIN BUTTON (NON-ADMIN, NON-MEMBER) */}
                                     {!isAdmin && !isMember && !hasPendingRequest && (
                                         <button
                                             onClick={handleJoin}
                                             disabled={joining}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg cursor-pointer"
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg cursor-pointer transition-all active:scale-95 shadow-sm"
                                         >
                                             {joining ? "Processing..." : "Join Group"}
                                         </button>
                                     )}
 
-                                    {/* MEMBER */}
+                                    {/* MEMBER STATUS (NON-ADMIN) */}
                                     {isMember && !isAdmin && (
-                                        <div className="bg-green-100 text-green-700 px-6 py-3 rounded-lg text-center font-medium border border-green-200 ">
+                                        <div className="bg-green-100 text-green-700 px-6 py-3 rounded-lg text-center font-medium border border-green-200">
                                             You are a Member
                                         </div>
                                     )}

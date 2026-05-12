@@ -13,7 +13,7 @@ const HEADER_NAV_ITEMS_MAP = {
     events: {
         id: 'events',
         label: 'Events',
-        href: '#events',
+        href: '/events',
     },
     about: {
         id: 'about',
