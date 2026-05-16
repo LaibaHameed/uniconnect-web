@@ -40,6 +40,8 @@ const GroupDetailsPage = () => {
 
     const hasPendingRequest = myJoinRequest?.status === "PENDING";
 
+    console.log("group members: ",members);
+
     if (isLoading) return <LoadingSkeleton />;
     if (isError || !group) return <ErrorState />
 

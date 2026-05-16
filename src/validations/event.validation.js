@@ -84,11 +84,43 @@ export const eventSchema = yup
             .nullable()
             .optional(),
 
-        registrationLink: yup
+        // NEW FIELDS
+
+        whatsappNumber: yup
             .string()
-            .url("Invalid registration URL")
+            .max(20, "WhatsApp number is too long")
             .nullable()
             .optional(),
+
+        contactEmail: yup
+            .string()
+            .email("Invalid contact email")
+            .nullable()
+            .optional(),
+
+        instagramHandle: yup
+            .string()
+            .max(100, "Instagram handle is too long")
+            .nullable()
+            .optional(),
+
+        isRegistrationRequired: yup
+            .boolean()
+            .default(false),
+
+        registrationLink: yup
+            .string()
+            .nullable()
+            .when("isRegistrationRequired", {
+                is: true,
+                then: (schema) =>
+                    schema
+                        .required("Registration link is required")
+                        .url("Invalid registration URL"),
+
+                otherwise: (schema) =>
+                    schema.optional().nullable(),
+            }),
 
         tags: yup
             .array()

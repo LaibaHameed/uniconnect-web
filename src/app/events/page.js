@@ -9,25 +9,27 @@ export default function EventsPage() {
     const filters = useSelector(selectEventFilters);
     const { page, limit } = useSelector(selectEventPagination);
 
-    // Fetch data using RTK Query, combining filters and pagination
     const { data, isLoading } = useGetEventsQuery({ ...filters, page, limit });
-    console.log("NestJS Response:", data);
 
     return (
         <div className="min-h-screen bg-zinc-50 py-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 <div className="mb-8">
-                    <h1 className="text-4xl font-extrabold text-zinc-900 tracking-tight mb-2">Campus Events</h1>
-                    <p className="text-lg text-zinc-500">Discover workshops, hackathons, and seminars happening at UAF.</p>
+                    <h1 className="text-4xl font-extrabold text-zinc-900 tracking-tight mb-2">
+                        Campus Events
+                    </h1>
+                    <p className="text-lg text-zinc-500">
+                        Discover workshops, hackathons, and seminars happening at UAF.
+                    </p>
                 </div>
 
                 <EventFilters />
 
                 <EventsList
-                    events={data?.data || []}
+                    events={data?.data ?? []}
                     isLoading={isLoading}
-                    totalPages={data?.meta?.totalPages || 1}
+                    totalPages={data?.meta?.totalPages ?? 1}
                 />
 
             </div>
