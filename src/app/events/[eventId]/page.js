@@ -2,9 +2,12 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { useGetEventByIdQuery } from '@/redux/slices/events/eventsApi';
+import { useGetEventByIdQuery, useCancelEventMutation } from '@/redux/slices/events/eventsApi';
 import { EventDetail } from '@/components/events/EventDetail';
 import { EventDetailSkeleton } from '@/components/events/EventDetailSkeleton';
+import { useSelector } from "react-redux";
+import { useListMembersQuery } from "@/redux/slices/groups/groupsApi";
+import { useGroupAccess } from "@/hooks/useGroupAccess";
 
 const EventNotFound = ({ onBack }) => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 flex flex-col items-center text-center">
@@ -22,29 +25,61 @@ const EventNotFound = ({ onBack }) => (
 );
 
 export default function SingleEventPage() {
+    const { userId } = useSelector((state) => state.auth);
     const { eventId } = useParams();
     const router = useRouter();
+    const [cancelEvent, { isLoading: isCancelling }] =
+        useCancelEventMutation();
 
     const { data: event, isLoading, isError } = useGetEventByIdQuery(eventId);
 
+    const groupId = event?.groupId?._id;
+
+    const { data: members } = useListMembersQuery(
+        { groupId },
+        { skip: !groupId }
+    );
+
+    const { isAdmin } = useGroupAccess({
+        members,
+        userId,
+    });
+
+    const isCreator = event?.createdBy === userId;
+    const canManageEvent = isAdmin || isCreator;
+
     const showNotFound = !isLoading && (isError || !event);
-    const showDetail  = !isLoading && !isError && event;
+    const showDetail = !isLoading && !isError && event;
+
+    const handleCancelEvent = async () => {
+        try {
+            await cancelEvent(eventId).unwrap();
+
+            alert('Event cancelled successfully');
+
+            router.refresh();
+        } catch (error) {
+            console.error(error);
+            alert(error?.data?.message || 'Failed to cancel event');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 py-8 px-4">
             <div className="max-w-4xl mx-auto">
 
                 <button
-                    onClick={() => router.back()}
+                    onClick={() => router.push('/events')}
                     className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6 transition-colors cursor-pointer"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Back to Events
                 </button>
 
-                {isLoading    && <EventDetailSkeleton />}
+                {isLoading && <EventDetailSkeleton />}
                 {showNotFound && <EventNotFound onBack={() => router.push('/events')} />}
-                {showDetail   && <EventDetail event={event} />}
+                {showDetail && <EventDetail event={event} onCancel={handleCancelEvent}
+                    isCancelling={isCancelling} canManageEvent={canManageEvent} />}
 
             </div>
         </div>

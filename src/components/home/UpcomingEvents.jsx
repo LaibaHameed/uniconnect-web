@@ -95,7 +95,7 @@ const UpcomingEvents = () => {
                         {event.title}
                       </h4>
                       <p className="text-sm sm:text-base text-gray-600">
-                        Organized by {event.group?.name ?? 'Unknown Society'}
+                        Organized by {event.groupId?.name ?? 'UAF Society'}
                       </p>
                     </div>
                   </div>

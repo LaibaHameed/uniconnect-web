@@ -1,8 +1,10 @@
+import { Ban } from 'lucide-react';
 import {
     Calendar, MapPin, Clock, Video, Sparkles,
     ExternalLink, Tag, Users, Mail, Phone,
     Instagram, Link as LinkIcon, Info
 } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import { EventStatusBadge } from './EventStatusBadge';
 import { humanize, formatEventDate } from '@/utils/event.utils';
 import Link from 'next/link';
@@ -51,7 +53,7 @@ const ContactChip = ({ icon: Icon, href, label, color = 'gray' }) => {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export const EventDetail = ({ event }) => {
+export const EventDetail = ({ event, onCancel, isCancelling, canManageEvent }) => {
     const { date: startDateStr, time: startTime } = formatEventDate(event.startDateTime);
     const { time: endTime } = formatEventDate(event.endDateTime);
 
@@ -110,7 +112,11 @@ export const EventDetail = ({ event }) => {
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                     {event.title}
                 </h1>
-
+                {event.status === 'CANCELLED' && (
+                    <div className="mt-4 mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm font-medium">
+                        This event has been cancelled.
+                    </div>
+                )}
                 {/* ── Organizer line ── */}
                 <p className="text-sm text-gray-500 mb-8 flex items-center gap-1.5">
                     <Users size={14} className="text-gray-400" />
@@ -140,17 +146,22 @@ export const EventDetail = ({ event }) => {
                 </div>
 
                 {/* ── AI Summary ── */}
-                {event.aiSummary && (
-                    <div className="mb-8 bg-blue-50 border border-blue-100 rounded-xl p-6">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Sparkles size={18} className="text-blue-600" />
-                            <h3 className="text-sm font-bold text-blue-900 uppercase tracking-widest">
-                                AI Quick Summary
-                            </h3>
-                        </div>
-                        <p className="text-blue-800 leading-relaxed text-sm">{event.aiSummary}</p>
+                {/* ── AI Summary ── */}
+                <div className="mb-8 bg-blue-50 border border-blue-100 rounded-xl p-6">
+                    <div className="flex items-center gap-2 mb-3">
+                        <Sparkles size={18} className="text-blue-600" />
+
+                        <h3 className="text-sm font-bold text-blue-900 uppercase tracking-widest">
+                            {event.aiSummary ? 'AI Quick Summary' : 'Quick Overview'}
+                        </h3>
                     </div>
-                )}
+
+                    <p className="text-blue-800 leading-relaxed text-sm">
+                        {event.aiSummary ||
+                            event.description?.slice(0, 180) +
+                            (event.description?.length > 180 ? '...' : '')}
+                    </p>
+                </div>
 
                 {/* ── Description ── */}
                 <div className="mb-8">
@@ -230,6 +241,18 @@ export const EventDetail = ({ event }) => {
 
                 {/* ── Footer: CTA ── */}
                 <div className="pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    {/* if admin cancel button */}
+                    {canManageEvent && event.status !== 'CANCELLED' && (
+                        <button
+                            onClick={onCancel}
+                            disabled={isCancelling}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors cursor-pointer"
+                        >
+                            <Ban size={16} />
+
+                            {isCancelling ? 'Cancelling...' : 'Cancel Event'}
+                        </button>
+                    )}
 
                     {/* Registration note */}
                     {event.isRegistrationRequired && !event.registrationLink && (

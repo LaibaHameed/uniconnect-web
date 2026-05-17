@@ -4,24 +4,24 @@ import { eventSchema, EventType, EventMode } from '@/validations/event.validatio
 import { FormField } from './FormField';
 import { TagInput } from './TagInput';
 
-const inputCls = (hasError) =>
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+const inputCls = (hasError, isLocked = false) =>
     [
-        'w-full bg-white border rounded-lg px-4 py-2.5 text-sm transition-colors outline-none',
-        hasError
-            ? 'border-red-400 focus:ring-2 focus:ring-red-100'
-            : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-50',
+        'w-full border rounded-lg px-4 py-2.5 text-sm transition-colors outline-none',
+        isLocked
+            ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed select-none'
+            : hasError
+                ? 'bg-white border-red-400 focus:ring-2 focus:ring-red-100'
+                : 'bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-50',
     ].join(' ');
 
 const Spinner = () => (
     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
         <circle
             className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-            fill="none"
+            cx="12" cy="12" r="10"
+            stroke="currentColor" strokeWidth="4" fill="none"
         />
         <path
             className="opacity-75"
@@ -31,11 +31,14 @@ const Spinner = () => (
     </svg>
 );
 
+// ── Component ──────────────────────────────────────────────────────────────
+
 export const EventForm = ({
     initialData,
     onSubmit,
     isLoading,
     onCancel,
+    submitLabel = 'Create Event',
 }) => {
     const {
         register,
@@ -55,18 +58,24 @@ export const EventForm = ({
     const mode = watch('mode');
     const isRegistrationRequired = watch('isRegistrationRequired');
 
+    // Title & category are locked in edit mode — they cannot change after creation
+    const isEditMode = !!initialData;
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 space-y-6">
 
+                {/* Title — locked in edit mode */}
                 <FormField
                     label="Event Title"
                     required
                     error={errors.title?.message}
+                    hint={isEditMode ? 'Event title cannot be changed after creation.' : undefined}
                 >
                     <input
                         {...register('title')}
-                        className={inputCls(!!errors.title)}
+                        disabled={isEditMode}
+                        className={inputCls(!!errors.title, isEditMode)}
                         placeholder="e.g. Annual Tech Symposium 2026"
                     />
                 </FormField>
@@ -86,49 +95,36 @@ export const EventForm = ({
                 </FormField>
 
                 <div className="grid md:grid-cols-2 gap-6">
+                    {/* Category — locked in edit mode */}
                     <FormField
                         label="Category"
                         required
                         error={errors.eventType?.message}
+                        hint={isEditMode ? 'Category cannot be changed after creation.' : undefined}
                     >
                         <select
                             {...register('eventType')}
-                            className={inputCls(!!errors.eventType)}
+                            disabled={isEditMode}
+                            className={inputCls(!!errors.eventType, isEditMode)}
                         >
                             <option value="">Select Category</option>
-
                             {EventType.map((t) => (
-                                <option key={t} value={t}>
-                                    {t}
-                                </option>
+                                <option key={t} value={t}>{t}</option>
                             ))}
                         </select>
                     </FormField>
 
-                    <FormField
-                        label="Event Mode"
-                        required
-                        error={errors.mode?.message}
-                    >
-                        <select
-                            {...register('mode')}
-                            className={inputCls(!!errors.mode)}
-                        >
+                    <FormField label="Event Mode" required error={errors.mode?.message}>
+                        <select {...register('mode')} className={inputCls(!!errors.mode)}>
                             {EventMode.map((m) => (
-                                <option key={m} value={m}>
-                                    {m.replace('_', ' ')}
-                                </option>
+                                <option key={m} value={m}>{m.replace('_', ' ')}</option>
                             ))}
                         </select>
                     </FormField>
                 </div>
 
                 {mode !== 'ONLINE' && (
-                    <FormField
-                        label="Venue"
-                        required
-                        error={errors.venue?.message}
-                    >
+                    <FormField label="Venue" required error={errors.venue?.message}>
                         <input
                             {...register('venue')}
                             className={inputCls(!!errors.venue)}
@@ -138,11 +134,7 @@ export const EventForm = ({
                 )}
 
                 <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                        label="Start Date & Time"
-                        required
-                        error={errors.startDateTime?.message}
-                    >
+                    <FormField label="Start Date & Time" required error={errors.startDateTime?.message}>
                         <input
                             type="datetime-local"
                             {...register('startDateTime')}
@@ -150,11 +142,7 @@ export const EventForm = ({
                         />
                     </FormField>
 
-                    <FormField
-                        label="End Date & Time"
-                        required
-                        error={errors.endDateTime?.message}
-                    >
+                    <FormField label="End Date & Time" required error={errors.endDateTime?.message}>
                         <input
                             type="datetime-local"
                             {...register('endDateTime')}
@@ -163,13 +151,8 @@ export const EventForm = ({
                     </FormField>
                 </div>
 
-                {/* Contact Information */}
-
                 <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                        label="WhatsApp Number"
-                        error={errors.whatsappNumber?.message}
-                    >
+                    <FormField label="WhatsApp Number" error={errors.whatsappNumber?.message}>
                         <input
                             {...register('whatsappNumber')}
                             className={inputCls(!!errors.whatsappNumber)}
@@ -177,10 +160,7 @@ export const EventForm = ({
                         />
                     </FormField>
 
-                    <FormField
-                        label="Contact Email"
-                        error={errors.contactEmail?.message}
-                    >
+                    <FormField label="Contact Email" error={errors.contactEmail?.message}>
                         <input
                             type="email"
                             {...register('contactEmail')}
@@ -190,10 +170,7 @@ export const EventForm = ({
                     </FormField>
                 </div>
 
-                <FormField
-                    label="Instagram Handle"
-                    error={errors.instagramHandle?.message}
-                >
+                <FormField label="Instagram Handle" error={errors.instagramHandle?.message}>
                     <input
                         {...register('instagramHandle')}
                         className={inputCls(!!errors.instagramHandle)}
@@ -201,8 +178,7 @@ export const EventForm = ({
                     />
                 </FormField>
 
-                {/* Registration Section */}
-
+                {/* Registration */}
                 <div className="space-y-4 border border-gray-200 rounded-lg p-5">
                     <div className="flex items-center gap-3">
                         <input
@@ -211,21 +187,13 @@ export const EventForm = ({
                             {...register('isRegistrationRequired')}
                             className="h-4 w-4"
                         />
-
-                        <label
-                            htmlFor="isRegistrationRequired"
-                            className="text-sm font-medium text-gray-700"
-                        >
+                        <label htmlFor="isRegistrationRequired" className="text-sm font-medium text-gray-700">
                             Registration Required
                         </label>
                     </div>
 
                     {isRegistrationRequired ? (
-                        <FormField
-                            label="Registration Link"
-                            required
-                            error={errors.registrationLink?.message}
-                        >
+                        <FormField label="Registration Link" required error={errors.registrationLink?.message}>
                             <input
                                 {...register('registrationLink')}
                                 className={inputCls(!!errors.registrationLink)}
@@ -243,13 +211,12 @@ export const EventForm = ({
                     <Controller
                         name="tags"
                         control={control}
-                        render={({ field }) => (
-                            <TagInput {...field} />
-                        )}
+                        render={({ field }) => <TagInput {...field} />}
                     />
                 </FormField>
             </div>
 
+            {/* Actions */}
             <div className="flex gap-3 pt-6">
                 <button
                     type="button"
@@ -267,10 +234,10 @@ export const EventForm = ({
                     {isLoading ? (
                         <span className="flex items-center justify-center gap-2">
                             <Spinner />
-                            Creating...
+                            Saving...
                         </span>
                     ) : (
-                        'Create Event'
+                        submitLabel
                     )}
                 </button>
             </div>

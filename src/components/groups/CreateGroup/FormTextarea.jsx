@@ -21,7 +21,7 @@ export const FormTextarea = ({ label, name, value, onChange, placeholder, rows =
                 />
             </div>
             <p className="text-xs text-gray-500">
-                {value.length} / 500 characters
+                {value.length} / 3000 characters
             </p>
         </div>
     );

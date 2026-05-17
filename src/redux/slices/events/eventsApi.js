@@ -23,13 +23,10 @@ export const eventsApi = apiSlice.injectEndpoints({
                     method: "GET",
                 };
             },
-            providesTags: (result) =>
-                result?.data
-                    ? [
-                        ...result.data.map(({ _id }) => ({ type: "Events", id: _id })),
-                        { type: "Events", id: "LIST" },
-                    ]
-                    : [{ type: "Events", id: "LIST" }],
+            providesTags: (result, error, arg) => [
+                { type: "Events", id: "LIST" },
+                { type: "Events", id: arg?.groupId },
+            ]
         }),
 
 
@@ -49,7 +46,10 @@ export const eventsApi = apiSlice.injectEndpoints({
                 method: "POST",
                 body,
             }),
-            invalidatesTags: [{ type: "Events", id: "LIST" }],
+            invalidatesTags: (result, error, arg) => [
+                { type: "Events", id: "LIST" },
+                { type: "Events", id: arg.groupId },
+            ],
         }),
 
         // 4. Update Event (Admin Only - Status/Details)
@@ -83,7 +83,10 @@ export const eventsApi = apiSlice.injectEndpoints({
                 url: `/events/${eventId}`,
                 method: "DELETE",
             }),
-            invalidatesTags: [{ type: "Events", id: "LIST" }],
+            invalidatesTags: (result, error, arg) => [
+                { type: "Events", id: "LIST" },
+                { type: "Events", id: arg.groupId },
+            ],
         }),
     }),
 });
